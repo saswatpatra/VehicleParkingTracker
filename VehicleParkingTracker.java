@@ -1,4 +1,10 @@
-import java.util.*;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 class ParkingRecord {
     String vehicleType;
@@ -22,15 +28,16 @@ class ParkingRecord {
         this.outTime = outTime;
     }
 
-    @Override
-    public String toString() {
-        return String.format("%-15s %-20s %-15s %-10s %-15s %-10s",
-                vehicleType, vehicleNumber, inDate, inTime, outDate, outTime);
+    String getFormattedRecord(int serial) {
+        return String.format("%-6d %-15s %-20s %-15s %-10s %-15s %-10s",
+                serial, vehicleType, vehicleNumber, inDate, inTime, outDate, outTime);
     }
 }
 
 public class VehicleParkingTracker {
     static List<ParkingRecord> records = new ArrayList<>();
+    static DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    static DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
@@ -72,11 +79,9 @@ public class VehicleParkingTracker {
         System.out.print("Vehicle Number?\n");
         String vehicleNumber = sc.nextLine();
 
-        System.out.print("In-Date (dd/MM/yyyy)?\n");
-        String inDate = sc.nextLine();
-
-        System.out.print("In-Time (HH:mm)?\n");
-        String inTime = sc.nextLine();
+        ZonedDateTime now = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+        String inDate = now.format(dateFormatter);
+        String inTime = now.format(timeFormatter);
 
         records.add(new ParkingRecord(vehicleType, vehicleNumber, inDate, inTime));
         System.out.println("Vehicle added successfully!");
@@ -89,11 +94,9 @@ public class VehicleParkingTracker {
         boolean found = false;
         for (ParkingRecord record : records) {
             if (record.vehicleNumber.equals(vehicleNumber) && record.outTime.equals("N/A")) {
-                System.out.print("Out-Date (dd/MM/yyyy)?\n");
-                String outDate = sc.nextLine();
-
-                System.out.print("Out-Time (HH:mm)?\n");
-                String outTime = sc.nextLine();
+                ZonedDateTime now = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+                String outDate = now.format(dateFormatter);
+                String outTime = now.format(timeFormatter);
 
                 record.setOutDetails(outDate, outTime);
                 System.out.println("\nVehicle Details:");
@@ -120,7 +123,7 @@ public class VehicleParkingTracker {
                 "Serial", "Vehicle-Type", "Vehicle-Number", "In-Date", "In-Time", "Out-Date", "Out-Time");
         int serial = 1;
         for (ParkingRecord record : records) {
-            System.out.printf("%-6d %s\n", serial, record);
+            System.out.println(record.getFormattedRecord(serial));
             serial++;
         }
     }

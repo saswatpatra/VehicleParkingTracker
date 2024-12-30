@@ -26,9 +26,9 @@ class ParkingRecord {
         this.outTime = outTime;
     }
 
-    String formatRecord() {
-        return String.format("%-15s %-20s %-15s %-10s %-15s %-10s",
-                vehicleType, vehicleNumber, inDate, inTime, outDate, outTime);
+    String formatRecordWithSerial(int serial) {
+        return String.format("%-6d %-15s %-20s %-15s %-10s %-15s %-10s",
+                serial, vehicleType, vehicleNumber, inDate, inTime, outDate, outTime);
     }
 }
 
@@ -79,6 +79,10 @@ public class VehicleParkingTracker {
     public static void vehicleIn(Scanner sc) {
         System.out.print("Vehicle Type?\n");
         String vehicleType = sc.nextLine();
+        while (vehicleType.trim().isEmpty()) {
+            System.out.println("Vehicle type cannot be empty. Please enter again:");
+            vehicleType = sc.nextLine();
+        }
 
         System.out.print("Vehicle Number?\n");
         String vehicleNumber = sc.nextLine();
@@ -92,34 +96,45 @@ public class VehicleParkingTracker {
     }
 
     public static void vehicleOut(Scanner sc) {
+        if (records.isEmpty()) {
+            System.out.println("No records exist. Please add a vehicle first.");
+            return;
+        }
+
         System.out.print("Vehicle Number?\n");
         String vehicleNumber = sc.nextLine();
 
         boolean found = false;
         for (ParkingRecord record : records) {
-            if (record.vehicleNumber.equals(vehicleNumber) && record.outTime.equals(ParkingRecord.NOT_AVAILABLE)) {
-                LocalDateTime now = LocalDateTime.now();
-                String outDate = now.format(DATE_FORMATTER);
-                String outTime = now.format(TIME_FORMATTER);
+            if (record.vehicleNumber.equals(vehicleNumber)) {
+                if (record.outTime.equals(ParkingRecord.NOT_AVAILABLE)) {
+                    LocalDateTime now = LocalDateTime.now();
+                    String outDate = now.format(DATE_FORMATTER);
+                    String outTime = now.format(TIME_FORMATTER);
 
-                record.setOutDetails(outDate, outTime);
-                System.out.println("\nVehicle Details:");
-                System.out.println("Vehicle Number: " + record.vehicleNumber);
-                System.out.println("In-Time: " + record.inDate + " " + record.inTime);
-                System.out.println("Out-Time: " + record.outDate + " " + record.outTime);
-                found = true;
-                break;
+                    record.setOutDetails(outDate, outTime);
+                    System.out.println("\nVehicle Details:");
+                    System.out.println("Vehicle Number: " + record.vehicleNumber);
+                    System.out.println("In-Time: " + record.inDate + " " + record.inTime);
+                    System.out.println("Out-Time: " + record.outDate + " " + record.outTime);
+                    found = true;
+                    break;
+                } else {
+                    System.out.println("Error: Vehicle with number " + vehicleNumber + " is already checked out.");
+                    found = true;
+                    break;
+                }
             }
         }
 
         if (!found) {
-            System.out.println("No matching vehicle found or vehicle already checked out.");
+            System.out.println("Error: No vehicle found with the number " + vehicleNumber + ".");
         }
     }
 
     public static void displayAllRecords() {
         if (records.isEmpty()) {
-            System.out.println("No records found.");
+            System.out.println("No records found. The parking lot is empty.");
             return;
         }
 
@@ -127,7 +142,7 @@ public class VehicleParkingTracker {
                 "Serial", "Vehicle-Type", "Vehicle-Number", "In-Date", "In-Time", "Out-Date", "Out-Time");
         int serial = 1;
         for (ParkingRecord record : records) {
-            System.out.printf("%-6d %s\n", serial, record.formatRecord());
+            System.out.println(record.formatRecordWithSerial(serial));
             serial++;
         }
     }
